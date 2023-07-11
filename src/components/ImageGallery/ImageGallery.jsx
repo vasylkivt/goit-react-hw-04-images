@@ -1,72 +1,62 @@
-import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
-
-import { List } from './ImageGallery.style';
-
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import Modal from 'components/Modal/Modal';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default class ImageGallery extends Component {
-  static propTypes = {
-    photos: PropTypes.arrayOf(
-      PropTypes.shape({
-        largeImageURL: PropTypes.string.isRequired,
-        webformatURL: PropTypes.string.isRequired,
-        id: PropTypes.number.isRequired,
-        tags: PropTypes.string.isRequired,
-      }).isRequired
-    ).isRequired,
-  };
+import { ImageGalleryItem, Modal, List } from 'components';
 
-  state = {
-    showModal: false,
-    largeImageURL: '',
-  };
+export const ImageGallery = ({ photos, page }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageUrl, setLargeImageUrl] = useState('');
 
-  galleryRef = React.createRef();
+  const galleryRef = useRef();
 
-  getSnapshotBeforeUpdate(prevProps) {
-    if (prevProps.photos.length < this.props.photos.length) {
-      const list = this.galleryRef.current;
-
-      return list.scrollHeight - list.scrollTop;
+  useEffect(() => {
+    if (page === 1) {
+      return;
     }
-    return null;
-  }
+    const listHeight = galleryRef.current?.scrollHeight;
 
-  componentDidUpdate(_, __, snapshot) {
-    if (snapshot !== null) {
-      window.scrollBy({
-        top: snapshot,
-        behavior: 'smooth',
-      });
-    }
-  }
+    smoothScroll(listHeight);
+  }, [page, photos]);
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const smoothScroll = listHeight => {
+    window.scrollBy({
+      top: listHeight,
+      behavior: 'smooth',
+    });
   };
 
-  showModal = largeImageURL => {
-    this.setState({ showModal: true, largeImageURL: largeImageURL });
+  const toggleModal = () => {
+    setShowModal(!showModal);
   };
 
-  render() {
-    const { photos } = this.props;
-    const { showModal, largeImageURL } = this.state;
-    return (
-      <>
-        <List ref={this.galleryRef}>
-          <ImageGalleryItem showModal={this.showModal} photos={photos} />
-        </List>
-        {showModal && (
-          <Modal toggleModal={this.toggleModal}>
-            <img src={largeImageURL} alt="largeImage" />
-          </Modal>
-        )}
-      </>
-    );
-  }
-}
+  const onShowModal = largeImageUrl => {
+    setShowModal(true);
+    setLargeImageUrl(largeImageUrl);
+  };
+
+  return (
+    <>
+      <List ref={galleryRef}>
+        <ImageGalleryItem showModal={onShowModal} photos={photos} />
+      </List>
+      {showModal && (
+        <Modal toggleModal={toggleModal}>
+          <img src={largeImageUrl} alt="largeImage" />
+        </Modal>
+      )}
+    </>
+  );
+};
+
+ImageGallery.propTypes = {
+  photos: PropTypes.arrayOf(
+    PropTypes.shape({
+      largeImageURL: PropTypes.string.isRequired,
+      webformatURL: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      tags: PropTypes.string.isRequired,
+    }).isRequired
+  ).isRequired,
+};
+
+//

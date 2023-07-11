@@ -1,44 +1,41 @@
 import { Backdrop, ModalContent } from './Modal.style';
 
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export default class Modal extends Component {
-  static propTypes = {
-    toggleModal: PropTypes.func.isRequired,
-  };
-
-  componentDidMount() {
-    window.addEventListener('keydown', this.handlerKeyDown);
+export const Modal = ({ children, toggleModal }) => {
+  useEffect(() => {
+    const handlerKeyDown = evt => {
+      if (evt.code === 'Escape') {
+        toggleModal();
+      }
+    };
+    window.addEventListener('keydown', handlerKeyDown);
     document.body.style.overflow = 'hidden';
-  }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handlerKeyDown);
-    document.body.style.overflow = '';
-  }
+    return () => {
+      window.removeEventListener('keydown', handlerKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [toggleModal]);
 
-  handlerKeyDown = evt => {
-    if (evt.code === 'Escape') {
-      this.props.toggleModal();
-    }
-  };
-  handlerBackdropClick = evt => {
+  const handlerBackdropClick = evt => {
     if (evt.currentTarget === evt.target) {
-      this.props.toggleModal();
+      toggleModal();
     }
   };
 
-  render() {
-    const { children } = this.props;
-    return createPortal(
-      <Backdrop onClick={this.handlerBackdropClick}>
-        <ModalContent>{children}</ModalContent>
-      </Backdrop>,
-      modalRoot
-    );
-  }
-}
+  return createPortal(
+    <Backdrop onClick={handlerBackdropClick}>
+      <ModalContent>{children}</ModalContent>
+    </Backdrop>,
+    modalRoot
+  );
+};
+
+Modal.propTypes = {
+  toggleModal: PropTypes.func.isRequired,
+};

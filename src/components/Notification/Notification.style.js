@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Text = styled.p`
+export const Notification = styled.p`
   max-width: 500px;
   margin: 50px auto;
 

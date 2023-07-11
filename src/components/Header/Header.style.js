@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-export const HeaderWrap = styled.header`
+export const Header = styled.header`
   top: 0;
   left: 0;
   position: sticky;

@@ -2,7 +2,7 @@ import React from 'react';
 import { FallingLines } from 'react-loader-spinner';
 import { LoaderWrap } from './Loader.style';
 
-const Loader = () => {
+export const Loader = () => {
   return (
     <LoaderWrap>
       <FallingLines
@@ -14,5 +14,3 @@ const Loader = () => {
     </LoaderWrap>
   );
 };
-
-export default Loader;

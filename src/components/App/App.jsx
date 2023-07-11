@@ -1,151 +1,259 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { fetchPhotosWithQuery } from 'services/api';
+import { fetchPhotosWithQuery } from 'services';
 
-import Loader from 'components/Loader/Loader';
-import Section from 'components/Section/Section';
-import Container from 'components/Container/Container';
-import Header from 'components/Header/Header';
-import SearchBar from 'components/SearchBar/SearchBar';
-import ImageGallery from 'components/ImageGallery/ImageGallery';
-import ButtonLoadMore from 'components/Button/Button';
-import Notification from 'components/Notification/Notification';
+import {
+  Container,
+  Header,
+  Notification,
+  SearchBar,
+  Section,
+  Loader,
+  ImageGallery,
+  ButtonLoadMore,
+} from 'components';
 
 const PER_PAGE = 12;
 //!
 const API_KEY = '36230302-a98b57dafca503e591043ee2d';
 
-export default class App extends Component {
-  perPage = PER_PAGE;
+export const App = () => {
+  const [photos, setPhotos] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [noPicturesFound, setNoPicturesFound] = useState(false);
 
-  state = {
-    photos: [],
-    isLoading: false,
-    error: null,
-    noPicturesFound: false,
-    query: null,
-    page: 1,
-    totalPage: 0,
-  };
-
-  componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-
-    if (prevState.query !== query || prevState.page !== page) {
-      this.updateGallery();
+  useEffect(() => {
+    if (query === '') {
+      return;
     }
-  }
+    updateGallery();
 
-  async updateGallery() {
-    const { photos, query, page } = this.state;
-
-    this.setState({ isLoading: true });
-    try {
-      const response = await fetchPhotosWithQuery({
-        searchQuery: query,
-        page: page,
-        perPage: this.perPage,
-        apiKey: API_KEY,
-      });
-
-      if (response.hits.length === 0) {
-        this.setState({
-          noPicturesFound: true,
-          error: null,
+    async function updateGallery() {
+      setIsLoading(true);
+      try {
+        const response = await fetchPhotosWithQuery({
+          searchQuery: query,
+          page: page,
+          perPage: PER_PAGE,
+          apiKey: API_KEY,
         });
-        return;
-      } else {
-        this.setState({
-          noPicturesFound: false,
-          error: null,
+
+        if (response.hits.length === 0) {
+          setError(null);
+          setNoPicturesFound(true);
+          return;
+        } else {
+          setError(null);
+          setNoPicturesFound(false);
+        }
+
+        const totalPage = Math.ceil(response.totalHits / PER_PAGE);
+
+        setPhotos(prevPhotos => {
+          return [...prevPhotos, ...response.hits];
         });
+
+        setIsLastPage(page >= totalPage);
+        setIsLoading(false);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
       }
-
-      const totalPage = response.totalHits / this.perPage;
-      this.setState({
-        photos: [...photos, ...response.hits],
-        isLoading: false,
-        totalPage,
-      });
-    } catch (error) {
-      this.setState({ error });
-    } finally {
-      this.setState({
-        isLoading: false,
-      });
     }
-  }
+  }, [query, page]);
 
-  handlerSubmit = value => {
+  const handleSubmit = value => {
     if (value.searchValue.trim() === '') {
       return;
     }
 
-    if (this.state.query === value.searchValue) {
+    if (query === value.searchValue) {
       return;
     }
 
-    this.setState(() => {
-      return {
-        query: value.searchValue,
-        page: 1,
-        photos: [],
-        totalPage: 0,
-      };
-    });
+    setPhotos([]);
+    setQuery(value.searchValue);
+    setPage(1);
   };
 
-  handlerLoadMore = () => {
-    this.setState(prevState => {
-      return {
-        page: prevState.page + 1,
-      };
-    });
+  const handleLoadMore = () => {
+    setPage(page + 1);
   };
 
-  render() {
-    const { photos, isLoading, error, page, totalPage, noPicturesFound } =
-      this.state;
+  const isGalleryEmpty = photos.length === 0;
 
-    const isGalleryEmpty = photos.length === 0;
+  return (
+    <>
+      <Header>
+        <SearchBar onSubmit={handleSubmit} />
+      </Header>
+      {isGalleryEmpty && !noPicturesFound && !error && (
+        <Notification>You can use the search to find images</Notification>
+      )}
 
-    const isLastPage = page > totalPage;
-    return (
-      <>
-        <Header>
-          <SearchBar onSubmit={this.handlerSubmit} />
-        </Header>
+      {noPicturesFound && (
+        <Notification>
+          Sorry, there are no images matching your request. Please try again.
+        </Notification>
+      )}
 
-        {isGalleryEmpty && !noPicturesFound && !error && (
-          <Notification>You can use the search to find images</Notification>
-        )}
+      {error && (
+        <Notification>
+          Unfortunately, something went wrong. Please try again or reload the
+          page.
+        </Notification>
+      )}
+      {!isGalleryEmpty && (
+        <Section>
+          <Container>
+            <ImageGallery page={page} photos={photos} />
+            {!isLoading && !isLastPage && !isGalleryEmpty && (
+              <ButtonLoadMore onClick={handleLoadMore} />
+            )}
+          </Container>
+        </Section>
+      )}
+      {isLoading && <Loader />}
+    </>
+  );
+};
 
-        {noPicturesFound && (
-          <Notification>
-            Sorry, there are no images matching your request. Please try again.
-          </Notification>
-        )}
+// export class App extends Component {
+//   perPage = PER_PAGE;
 
-        {error && (
-          <Notification>
-            Unfortunately, something went wrong. Please try again or reload the
-            page.
-          </Notification>
-        )}
-        {!isGalleryEmpty && (
-          <Section>
-            <Container>
-              <ImageGallery photos={photos} />
+//   state = {
+//     photos: [],
+//     isLoading: false,
+//     error: null,
+//     noPicturesFound: false,
+//     query: null,
+//     page: 1,
+//     totalPage: 0,
+//   };
 
-              {!isLoading && !isLastPage && !isGalleryEmpty && (
-                <ButtonLoadMore onClick={this.handlerLoadMore} />
-              )}
-            </Container>
-          </Section>
-        )}
+//   componentDidUpdate(_, prevState) {
+//     const { query, page } = this.state;
 
-        {isLoading && <Loader />}
-      </>
-    );
-  }
-}
+//     if (prevState.query !== query || prevState.page !== page) {
+//       this.updateGallery();
+//     }
+//   }
+
+//   async updateGallery() {
+//     const { photos, query, page } = this.state;
+
+//     this.setState({ isLoading: true });
+//     try {
+//       const response = await fetchPhotosWithQuery({
+//         searchQuery: query,
+//         page: page,
+//         perPage: this.perPage,
+//         apiKey: API_KEY,
+//       });
+
+//       if (response.hits.length === 0) {
+//         this.setState({
+//           noPicturesFound: true,
+//           error: null,
+//         });
+//         return;
+//       } else {
+//         this.setState({
+//           noPicturesFound: false,
+//           error: null,
+//         });
+//       }
+
+//       const totalPage = response.totalHits / this.perPage;
+//       this.setState({
+//         photos: [...photos, ...response.hits],
+//         isLoading: false,
+//         totalPage,
+//       });
+//     } catch (error) {
+//       this.setState({ error });
+//     } finally {
+//       this.setState({
+//         isLoading: false,
+//       });
+//     }
+//   }
+
+//   handlerSubmit = value => {
+//     if (value.searchValue.trim() === '') {
+//       return;
+//     }
+
+//     if (this.state.query === value.searchValue) {
+//       return;
+//     }
+
+//     this.setState(() => {
+//       return {
+//         query: value.searchValue,
+//         page: 1,
+//         photos: [],
+//         totalPage: 0,
+//       };
+//     });
+//   };
+
+//   handlerLoadMore = () => {
+//     this.setState(prevState => {
+//       return {
+//         page: prevState.page + 1,
+//       };
+//     });
+//   };
+
+// render() {
+//   const { photos, isLoading, error, page, totalPage, noPicturesFound } =
+//     this.state;
+
+// const isGalleryEmpty = photos.length === 0;
+
+// const isLastPage = page > totalPage;
+//   return (
+//     <>
+//       <Header>
+//         <SearchBar onSubmit={this.handlerSubmit} />
+//       </Header>
+
+// {isGalleryEmpty && !noPicturesFound && !error && (
+//   <Notification>You can use the search to find images</Notification>
+// )}
+
+// {noPicturesFound && (
+//   <Notification>
+//     Sorry, there are no images matching your request. Please try again.
+//   </Notification>
+// )}
+
+// {error && (
+//   <Notification>
+//     Unfortunately, something went wrong. Please try again or reload the
+//     page.
+//   </Notification>
+// )}
+// {!isGalleryEmpty && (
+//   <Section>
+//     <Container>
+//       <ImageGallery photos={photos} />
+
+//       {!isLoading && !isLastPage && !isGalleryEmpty && (
+//         <ButtonLoadMore onClick={this.handlerLoadMore} />
+//       )}
+//     </Container>
+//   </Section>
+// )}
+
+// {isLoading && <Loader />}
+//     </>
+//   );
+// }
+// }

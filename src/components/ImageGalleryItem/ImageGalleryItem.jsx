@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import { Image, Item } from './ImageGalleryItem.style';
 
-const ImageGalleryItem = ({ photos, showModal }) => {
+export const ImageGalleryItem = ({ photos, showModal }) => {
   return photos.map(({ largeImageURL, webformatURL, id, tags }) => {
     return (
       <Item key={id}>
@@ -14,8 +14,6 @@ const ImageGalleryItem = ({ photos, showModal }) => {
     );
   });
 };
-
-export default ImageGalleryItem;
 
 ImageGalleryItem.propTypes = {
   photos: PropTypes.arrayOf(

@@ -5,6 +5,7 @@ import {
   SearchForm,
   SearchIcon,
 } from './SearchBar.style';
+
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
@@ -13,7 +14,7 @@ const SearchScheme = Yup.object().shape({
   searchValue: Yup.string().min(2, 'Too Short!').required('Required'),
 });
 
-const SearchBar = ({ onSubmit }) => (
+export const SearchBar = ({ onSubmit }) => (
   <Formik
     initialValues={{
       searchValue: '',
@@ -43,8 +44,6 @@ const SearchBar = ({ onSubmit }) => (
     )}
   </Formik>
 );
-
-export default SearchBar;
 
 SearchBar.propTypes = {
   onSubmit: PropTypes.func.isRequired,
