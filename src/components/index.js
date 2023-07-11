@@ -9,5 +9,4 @@ export * from 'components/Loader/Loader';
 export * from 'components/ImageGallery/ImageGallery';
 export * from 'components/ImageGallery/ImageGallery.style';
 export * from 'components/ImageGalleryItem/ImageGalleryItem';
-
 export * from 'components/Button/Button';
