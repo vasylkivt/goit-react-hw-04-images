@@ -6,13 +6,12 @@ import { createPortal } from 'react-dom';
 
 const modalRoot = document.querySelector('#modal-root');
 
-export const Modal = ({ children, toggleModal }) => {
+export const Modal = ({ children, showModal }) => {
   useEffect(() => {
     const handlerKeyDown = evt => {
-      if (evt.code === 'Escape') {
-        toggleModal();
-      }
+      if (evt.code === 'Escape') showModal();
     };
+
     window.addEventListener('keydown', handlerKeyDown);
     document.body.style.overflow = 'hidden';
 
@@ -20,12 +19,10 @@ export const Modal = ({ children, toggleModal }) => {
       window.removeEventListener('keydown', handlerKeyDown);
       document.body.style.overflow = '';
     };
-  }, [toggleModal]);
+  }, [showModal]);
 
   const handlerBackdropClick = evt => {
-    if (evt.currentTarget === evt.target) {
-      toggleModal();
-    }
+    if (evt.currentTarget === evt.target) showModal();
   };
 
   return createPortal(
@@ -37,5 +34,5 @@ export const Modal = ({ children, toggleModal }) => {
 };
 
 Modal.propTypes = {
-  toggleModal: PropTypes.func.isRequired,
+  showModal: PropTypes.func.isRequired,
 };

@@ -1,28 +1,40 @@
 import PropTypes from 'prop-types';
 import { Image, Item } from './ImageGalleryItem.style';
 
-export const ImageGalleryItem = ({ photos, showModal }) => {
-  return photos.map(({ largeImageURL, webformatURL, id, tags }) => {
-    return (
-      <Item key={id}>
-        <Image
-          onClick={() => showModal(largeImageURL)}
-          src={webformatURL}
-          alt={tags}
-        />
-      </Item>
-    );
-  });
+import { Modal } from 'components';
+import { useState } from 'react';
+
+export const ImageGalleryItem = ({
+  photo: { largeImageURL, webformatURL, tags },
+}) => {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <Item>
+      <Image
+        onClick={() => {
+          setShowModal(true);
+        }}
+        src={webformatURL}
+        alt={tags}
+      />
+      {showModal && (
+        <Modal
+          showModal={() => {
+            setShowModal(false);
+          }}
+        >
+          <img src={largeImageURL} alt={tags} />
+        </Modal>
+      )}
+    </Item>
+  );
 };
 
 ImageGalleryItem.propTypes = {
-  photos: PropTypes.arrayOf(
-    PropTypes.shape({
-      largeImageURL: PropTypes.string.isRequired,
-      webformatURL: PropTypes.string.isRequired,
-      id: PropTypes.number.isRequired,
-      tags: PropTypes.string.isRequired,
-    }).isRequired
-  ).isRequired,
-  showModal: PropTypes.func.isRequired,
+  photo: PropTypes.shape({
+    largeImageURL: PropTypes.string.isRequired,
+    webformatURL: PropTypes.string.isRequired,
+    tags: PropTypes.string.isRequired,
+  }).isRequired,
 };

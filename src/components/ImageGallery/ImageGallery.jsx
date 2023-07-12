@@ -1,49 +1,27 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-import { ImageGalleryItem, Modal, List } from 'components';
+import { ImageGalleryItem, List } from 'components';
 
 export const ImageGallery = ({ photos, page }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [largeImageUrl, setLargeImageUrl] = useState('');
-
   const galleryRef = useRef();
 
   useEffect(() => {
-    if (page === 1) {
-      return;
-    }
-    const listHeight = galleryRef.current?.scrollHeight;
+    if (page === 1) return;
 
-    smoothScroll(listHeight);
-  }, [page, photos]);
-
-  const smoothScroll = listHeight => {
     window.scrollBy({
-      top: listHeight,
+      top: galleryRef.current?.scrollHeight || 0,
       behavior: 'smooth',
     });
-  };
-
-  const toggleModal = () => {
-    setShowModal(!showModal);
-  };
-
-  const onShowModal = largeImageUrl => {
-    setShowModal(true);
-    setLargeImageUrl(largeImageUrl);
-  };
+  }, [page, photos]);
 
   return (
     <>
       <List ref={galleryRef}>
-        <ImageGalleryItem showModal={onShowModal} photos={photos} />
+        {photos.map(photo => (
+          <ImageGalleryItem key={photo.id} photo={photo} />
+        ))}
       </List>
-      {showModal && (
-        <Modal toggleModal={toggleModal}>
-          <img src={largeImageUrl} alt="largeImage" />
-        </Modal>
-      )}
     </>
   );
 };
@@ -57,6 +35,5 @@ ImageGallery.propTypes = {
       tags: PropTypes.string.isRequired,
     }).isRequired
   ).isRequired,
+  page: PropTypes.number.isRequired,
 };
-
-//

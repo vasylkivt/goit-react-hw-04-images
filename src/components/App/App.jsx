@@ -14,8 +14,6 @@ import {
 } from 'components';
 
 const PER_PAGE = 12;
-//!
-const API_KEY = '36230302-a98b57dafca503e591043ee2d';
 
 export const App = () => {
   const [photos, setPhotos] = useState([]);
@@ -27,22 +25,20 @@ export const App = () => {
   const [noPicturesFound, setNoPicturesFound] = useState(false);
 
   useEffect(() => {
-    if (query === '') {
-      return;
-    }
+    if (query === '') return;
+
     updateGallery();
 
     async function updateGallery() {
       setIsLoading(true);
       try {
-        const response = await fetchPhotosWithQuery({
+        const { totalHits, hits } = await fetchPhotosWithQuery({
           searchQuery: query,
           page: page,
           perPage: PER_PAGE,
-          apiKey: API_KEY,
         });
 
-        if (response.hits.length === 0) {
+        if (hits.length === 0) {
           setError(null);
           setNoPicturesFound(true);
           return;
@@ -51,11 +47,9 @@ export const App = () => {
           setNoPicturesFound(false);
         }
 
-        const totalPage = Math.ceil(response.totalHits / PER_PAGE);
+        const totalPage = Math.ceil(totalHits / PER_PAGE);
 
-        setPhotos(prevPhotos => {
-          return [...prevPhotos, ...response.hits];
-        });
+        setPhotos(prevPhotos => [...prevPhotos, ...hits]);
 
         setIsLastPage(page >= totalPage);
         setIsLoading(false);
@@ -65,25 +59,18 @@ export const App = () => {
         setIsLoading(false);
       }
     }
-  }, [query, page]);
+  }, [page, query]);
 
   const handleSubmit = value => {
-    if (value.searchValue.trim() === '') {
-      return;
-    }
-
-    if (query === value.searchValue) {
-      return;
-    }
+    if (value.searchValue.trim() === '') return;
+    if (query === value.searchValue) return;
 
     setPhotos([]);
     setQuery(value.searchValue);
     setPage(1);
   };
 
-  const handleLoadMore = () => {
-    setPage(page + 1);
-  };
+  const handleLoadMore = () => setPage(page + 1);
 
   const isGalleryEmpty = photos.length === 0;
 
