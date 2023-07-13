@@ -25,7 +25,6 @@ export const App = () => {
   const [noPicturesFound, setNoPicturesFound] = useState(false);
 
   const galleryRef = useRef();
-  const galleryRef1 = useRef();
 
   useEffect(() => {
     if (query === '') return;
