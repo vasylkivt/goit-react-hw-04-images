@@ -1,30 +1,19 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef } from 'react';
 
 import { ImageGalleryItem, List } from 'components';
 
-export const ImageGallery = ({ photos, page }) => {
-  const galleryRef = useRef();
-
-  useEffect(() => {
-    if (page === 1) return;
-
-    window.scrollBy({
-      top: galleryRef.current?.scrollHeight || 0,
-      behavior: 'smooth',
-    });
-  }, [page, photos]);
-
+export const ImageGallery = forwardRef(({ photos }, ref) => {
   return (
     <>
-      <List ref={galleryRef}>
+      <List ref={ref}>
         {photos.map(photo => (
           <ImageGalleryItem key={photo.id} photo={photo} />
         ))}
       </List>
     </>
   );
-};
+});
 
 ImageGallery.propTypes = {
   photos: PropTypes.arrayOf(
@@ -35,5 +24,4 @@ ImageGallery.propTypes = {
       tags: PropTypes.string.isRequired,
     }).isRequired
   ).isRequired,
-  page: PropTypes.number.isRequired,
 };

@@ -8,7 +8,5 @@ export const Notification = styled.p`
   font-weight: 700;
 
   font-size: 36px;
-  line-height: 1.11;
-  letter-spacing: 0.72px;
   text-align: center;
 `;

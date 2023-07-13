@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { fetchPhotosWithQuery } from 'services';
 
@@ -24,10 +24,11 @@ export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [noPicturesFound, setNoPicturesFound] = useState(false);
 
+  const galleryRef = useRef();
+  const galleryRef1 = useRef();
+
   useEffect(() => {
     if (query === '') return;
-
-    updateGallery();
 
     async function updateGallery() {
       setIsLoading(true);
@@ -59,7 +60,18 @@ export const App = () => {
         setIsLoading(false);
       }
     }
+
+    updateGallery();
   }, [page, query]);
+
+  useEffect(() => {
+    if (page === 1) return;
+
+    window.scrollBy({
+      top: galleryRef.current?.scrollHeight || 0,
+      behavior: 'smooth',
+    });
+  }, [page, photos]);
 
   const handleSubmit = value => {
     if (value.searchValue.trim() === '') return;
@@ -98,7 +110,7 @@ export const App = () => {
       {!isGalleryEmpty && (
         <Section>
           <Container>
-            <ImageGallery page={page} photos={photos} />
+            <ImageGallery ref={galleryRef} page={page} photos={photos} />
             {!isLoading && !isLastPage && !isGalleryEmpty && (
               <ButtonLoadMore onClick={handleLoadMore} />
             )}
